@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sports and Rehab Programmes</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #181D24;
+    color: #E8EAED;
+    margin: 0;
+    padding: 16px;
+  }
+  h1 { font-size: 20px; margin: 0 0 16px; }
+  .layout {
+    display: flex;
+    gap: 16px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  @media (max-width: 700px) {
+    .layout { flex-direction: column; }
+  }
+  .panel {
+    background: #232A34;
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .list-panel { flex: 0 0 280px; }
+  .detail-panel { flex: 1; min-width: 0; }
+  .add-form input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    border: 1px solid #3A4351;
+    background: #181D24;
+    color: #E8EAED;
+    font-size: 14px;
+  }
+  button {
+    background: #4C8BF5;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  button:hover { background: #3A76D8; }
+  button.secondary {
+    background: #3A4351;
+  }
+  button.secondary:hover { background: #4A5468; }
+  .technique-item {
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 6px;
+    background: #1D232C;
+  }
+  .technique-item:hover { background: #2A3240; }
+  .technique-item.active { background: #4C8BF5; color: white; }
+  .empty-state { color: #8A93A3; font-size: 14px; padding: 20px 0; text-align: center; }
+  .video-wrap {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .video-wrap iframe {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    border: none;
+  }
+  .notes-section h3 { font-size: 15px; margin: 0 0 8px; }
+  textarea {
+    width: 100%;
+    min-height: 60px;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #3A4351;
+    background: #181D24;
+    color: #E8EAED;
+    font-size: 14px;
+    resize: vertical;
+    margin-bottom: 8px;
+  }
+  .note-item {
+    background: #1D232C;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    white-space: pre-wrap;
+  }
+  .note-meta {
+    font-size: 12px;
+    color: #8A93A3;
+    margin-top: 6px;
+  }
+  .timestamp-badge {
+    display: inline-block;
+    background: #4C8BF5;
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .timestamp-badge:hover {
+    background: #3A76D8;
+  }
+  .timestamp-badge:disabled {
+    background: #3A4351;
+    cursor: not-allowed;
+    color: #8A93A3;
+  }
+  .delete-link {
+    color: #E86C6C;
+    font-size: 12px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    margin-top: 6px;
+  }
+  .error { color: #E86C6C; font-size: 13px; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<h1>Sports and Rehab Programmes</h1>
+
+<div class="layout">
+  <div class="panel list-panel">
+    <div class="add-form">
+      <input type="text" id="titleInput" placeholder="Programme Titles (e.g. ACL Rehab, Speed Rehab)">
+      <input type="text" id="urlInput" placeholder="YouTube link">
+      <div id="addError" class="error"></div>
+      <button onclick="addTechnique()">Add Rehab Programme</button>
+    </div>
+    <hr style="border-color:#3A4351; margin: 16px 0;">
+    <div id="techniqueList"></div>
+    <hr style="border-color:#3A4351; margin: 16px 0;">
+    <div class="backup-section">
+      <button class="secondary" onclick="exportData()" style="width:100%; margin-bottom:8px;">Export Backup</button>
+      <button class="secondary" onclick="document.getElementById('importFileInput').click()" style="width:100%;">Import Backup</button>
+      <input type="file" id="importFileInput" accept="application/json" style="display:none;" onchange="importData(event)">
+      <div id="backupMessage" style="font-size:12px; margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <div class="panel detail-panel" id="detailPanel">
+    <div class="empty-state">Select or add a rehab programme to get started.</div>
+  </div>
+</div>
+
+<script>
+// ---------- YouTube IFrame API ----------
+let ytPlayer = null;
+let ytApiReady = false;
+
+const ytScriptTag = document.createElement("script");
+ytScriptTag.src = "https://www.youtube.com/iframe_api";
+document.head.appendChild(ytScriptTag);
+
+// Called automatically by the YouTube API once it's loaded
+window.onYouTubeIframeAPIReady = function () {
+  ytApiReady = true;
+};
+
+function formatTime(totalSeconds) {
+  const seconds = Math.floor(totalSeconds % 60);
+  const minutes = Math.floor(totalSeconds / 60);
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
+
+// ---------- IndexedDB setup ----------
+let db;
+const DB_NAME = "technique-notes-db";
+const DB_VERSION = 1;
+
+const openRequest = indexedDB.open(DB_NAME, DB_VERSION);
+
+openRequest.onupgradeneeded = (event) => {
+  db = event.target.result;
+  if (!db.objectStoreNames.contains("techniques")) {
+    const store = db.createObjectStore("techniques", { keyPath: "id", autoIncrement: true });
+    store.createIndex("createdAt", "createdAt");
+  }
+  if (!db.objectStoreNames.contains("notes")) {
+    const store = db.createObjectStore("notes", { keyPath: "id", autoIncrement: true });
+    store.createIndex("techniqueId", "techniqueId");
+  }
+};
+
+openRequest.onsuccess = (event) => {
+  db = event.target.result;
+  loadTechniqueList();
+};
+
+openRequest.onerror = (event) => {
+  console.error("Failed to open database", event);
+  document.getElementById("detailPanel").innerHTML =
+    '<div class="error">Could not open local database. Try a different browser or check storage permissions.</div>';
+};
+
+// ---------- Helpers ----------
+function extractYouTubeId(url) {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
+    /(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+    /(?:youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+    /(?:youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/
+  ];
+  for (const p of patterns) {
+    const match = url.match(p);
+    if (match) return match[1];
+  }
+  return null;
+}
+
+let activeTechniqueId = null;
+
+// ---------- Add technique ----------
+function addTechnique() {
+  const titleInput = document.getElementById("titleInput");
+  const urlInput = document.getElementById("urlInput");
+  const errorDiv = document.getElementById("addError");
+  errorDiv.textContent = "";
+
+  const title = titleInput.value.trim();
+  const url = urlInput.value.trim();
+
+  if (!title) {
+    errorDiv.textContent = "Please enter a title.";
+    return;
+  }
+
+  let videoId = null;
+  if (url) {
+    videoId = extractYouTubeId(url);
+    if (!videoId) {
+      errorDiv.textContent = "Couldn't recognize that as a YouTube link. Double check it, or leave it blank.";
+      return;
+    }
+  }
+
+  const technique = {
+    title,
+    url: url || null,
+    videoId: videoId || null,
+    createdAt: Date.now()
+  };
+
+  const tx = db.transaction("techniques", "readwrite");
+  const store = tx.objectStore("techniques");
+  const request = store.add(technique);
+
+  request.onsuccess = () => {
+    titleInput.value = "";
+    urlInput.value = "";
+    loadTechniqueList();
+  };
+
+  request.onerror = () => {
+    errorDiv.textContent = "Something went wrong saving that. Try again.";
+  };
+}
+
+// ---------- List techniques ----------
+function loadTechniqueList() {
+  const tx = db.transaction("techniques", "readonly");
+  const store = tx.objectStore("techniques");
+  const request = store.getAll();
+
+  request.onsuccess = () => {
+    const techniques = request.result.sort((a, b) => b.createdAt - a.createdAt);
+    const listDiv = document.getElementById("techniqueList");
+
+    if (techniques.length === 0) {
+      listDiv.innerHTML = '<div class="empty-state">No programmes yet.</div>';
+      return;
+    }
+
+    listDiv.innerHTML = "";
+    techniques.forEach((t) => {
+      const item = document.createElement("div");
+      item.className = "technique-item" + (t.id === activeTechniqueId ? " active" : "");
+      item.textContent = t.title;
+      item.onclick = () => selectTechnique(t.id);
+      listDiv.appendChild(item);
+    });
+  };
+}
+
+// ---------- Select technique ----------
+function selectTechnique(id) {
+  activeTechniqueId = id;
+  loadTechniqueList();
+
+  const tx = db.transaction("techniques", "readonly");
+  const store = tx.objectStore("techniques");
+  const request = store.get(id);
+
+  request.onsuccess = () => {
+    renderDetail(request.result);
+  };
+}
+
+function renderDetail(technique) {
+  const panel = document.getElementById("detailPanel");
+
+  let videoHtml = "";
+  if (technique.videoId) {
+    videoHtml = `
+      <div class="video-wrap">
+        <div id="ytPlayerContainer" style="position:absolute; top:0; left:0; width:100%; height:100%;"></div>
+      </div>`;
+  } else {
+    videoHtml = `<div class="empty-state">No video linked for this rehab programme.</div>`;
+  }
+
+  panel.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+      <h2 style="margin-top:0;">${escapeHtml(technique.title)}</h2>
+      <button class="secondary" onclick="deleteTechnique(${technique.id})" style="flex-shrink:0; background:#3A2A2A; color:#E86C6C;">Delete Programme</button>
+    </div>
+    ${videoHtml}
+    <div class="notes-section">
+      <h3>Notes</h3>
+      <textarea id="noteInput" placeholder="Write a note about this rehab programme..."></textarea>
+      <button id="addNoteBtn" onclick="addNote(${technique.id})">Add Note</button>
+      <div id="notesList" style="margin-top:16px;"></div>
+    </div>
+  `;
+
+  if (technique.videoId) {
+    initPlayer(technique.videoId);
+  }
+
+  loadNotes(technique.id);
+}
+
+// Sets up (or re-creates) the YouTube player for a given video ID.
+// Waits for the API to be ready if it hasn't loaded yet.
+function initPlayer(videoId) {
+  if (!ytApiReady) {
+    // API script hasn't finished loading yet — try again shortly.
+    setTimeout(() => initPlayer(videoId), 200);
+    return;
+  }
+
+  if (ytPlayer && typeof ytPlayer.destroy === "function") {
+    ytPlayer.destroy();
+  }
+
+  ytPlayer = new YT.Player("ytPlayerContainer", {
+    videoId: videoId,
+    playerVars: { rel: 0 },
+    events: {
+      onError: (e) => {
+        console.error("YouTube player error", e);
+      }
+    }
+  });
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ---------- Notes ----------
+function addNote(techniqueId) {
+  const noteInput = document.getElementById("noteInput");
+  const text = noteInput.value.trim();
+  if (!text) return;
+
+  // Capture the video's current playback position, if a player is active
+  // and has actually loaded a video (getCurrentTime exists once ready).
+  let timestampSeconds = null;
+  if (ytPlayer && typeof ytPlayer.getCurrentTime === "function") {
+    try {
+      timestampSeconds = ytPlayer.getCurrentTime();
+    } catch (e) {
+      timestampSeconds = null;
+    }
+  }
+
+  const note = {
+    techniqueId,
+    text,
+    timestampSeconds,
+    createdAt: Date.now()
+  };
+
+  const tx = db.transaction("notes", "readwrite");
+  const store = tx.objectStore("notes");
+  const request = store.add(note);
+
+  request.onsuccess = () => {
+    noteInput.value = "";
+    loadNotes(techniqueId);
+  };
+}
+
+// Jumps the video back to a note's saved timestamp.
+function seekToTimestamp(seconds) {
+  if (ytPlayer && typeof ytPlayer.seekTo === "function") {
+    ytPlayer.seekTo(seconds, true);
+    if (typeof ytPlayer.playVideo === "function") {
+      ytPlayer.playVideo();
+    }
+  }
+}
+
+function loadNotes(techniqueId) {
+  const tx = db.transaction("notes", "readonly");
+  const store = tx.objectStore("notes");
+  const index = store.index("techniqueId");
+  const request = index.getAll(techniqueId);
+
+  request.onsuccess = () => {
+    const notes = request.result.sort((a, b) => b.createdAt - a.createdAt);
+    const notesList = document.getElementById("notesList");
+
+    if (notes.length === 0) {
+      notesList.innerHTML = '<div class="empty-state">No notes yet for this rehab programme.</div>';
+      return;
+    }
+
+    notesList.innerHTML = "";
+    notes.forEach((n) => {
+      const div = document.createElement("div");
+      div.className = "note-item";
+
+      let timestampHtml = "";
+      if (typeof n.timestampSeconds === "number" && !isNaN(n.timestampSeconds)) {
+        timestampHtml = `<button class="timestamp-badge" onclick="seekToTimestamp(${n.timestampSeconds})">${formatTime(n.timestampSeconds)}</button>`;
+      }
+
+      div.innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          ${timestampHtml}
+          <span>${escapeHtml(n.text)}</span>
+        </div>
+        <button class="delete-link" onclick="deleteNote(${n.id}, ${techniqueId})">Delete</button>
+      `;
+      notesList.appendChild(div);
+    });
+  };
+}
+
+function deleteNote(noteId, techniqueId) {
+  const tx = db.transaction("notes", "readwrite");
+  const store = tx.objectStore("notes");
+  const request = store.delete(noteId);
+  request.onsuccess = () => loadNotes(techniqueId);
+}
+
+// ---------- Delete a whole programme (and its notes) ----------
+function deleteTechnique(techniqueId) {
+  const confirmed = confirm(
+    "Delete this rehab programme? This will also delete all notes attached to it. This can't be undone."
+  );
+  if (!confirmed) return;
+
+  // First delete all notes belonging to this technique, then the technique itself.
+  const notesTx = db.transaction("notes", "readwrite");
+  const notesStore = notesTx.objectStore("notes");
+  const notesIndex = notesStore.index("techniqueId");
+  const notesRequest = notesIndex.getAllKeys(techniqueId);
+
+  notesRequest.onsuccess = () => {
+    const noteKeys = notesRequest.result;
+    noteKeys.forEach((key) => notesStore.delete(key));
+
+    notesTx.oncomplete = () => {
+      const techTx = db.transaction("techniques", "readwrite");
+      const techStore = techTx.objectStore("techniques");
+      const deleteRequest = techStore.delete(techniqueId);
+
+      deleteRequest.onsuccess = () => {
+        // Clean up the player if it was showing this technique's video
+        if (ytPlayer && typeof ytPlayer.destroy === "function") {
+          ytPlayer.destroy();
+          ytPlayer = null;
+        }
+
+        activeTechniqueId = null;
+        document.getElementById("detailPanel").innerHTML =
+          '<div class="empty-state">Select or add a rehab programme to get started.</div>';
+        loadTechniqueList();
+      };
+    };
+  };
+}
+
+// ---------- Backup: Export ----------
+function getAllFromStore(storeName) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, "readonly");
+    const store = tx.objectStore(storeName);
+    const request = store.getAll();
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function exportData() {
+  const messageDiv = document.getElementById("backupMessage");
+  try {
+    const techniques = await getAllFromStore("techniques");
+    const notes = await getAllFromStore("notes");
+
+    const backup = {
+      appName: "Sports and Rehab Programmes",
+      exportedAt: new Date().toISOString(),
+      version: 1,
+      techniques,
+      notes
+    };
+
+    const jsonString = JSON.stringify(backup, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const dateStamp = new Date().toISOString().slice(0, 10);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `rehab-programmes-backup-${dateStamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    messageDiv.style.color = "#8A93A3";
+    messageDiv.textContent = "Backup downloaded.";
+  } catch (err) {
+    console.error("Export failed", err);
+    messageDiv.style.color = "#E86C6C";
+    messageDiv.textContent = "Export failed. Check the browser console for details.";
+  }
+}
+
+// ---------- Backup: Import ----------
+function importData(event) {
+  const file = event.target.files[0];
+  const messageDiv = document.getElementById("backupMessage");
+  if (!file) return;
+
+  const confirmed = confirm(
+    "Importing will ADD the programmes and notes from this backup file to your current library. " +
+    "It will not delete anything currently saved. Continue?"
+  );
+  if (!confirmed) {
+    event.target.value = "";
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = async () => {
+    try {
+      const data = JSON.parse(reader.result);
+
+      if (!data.techniques || !data.notes) {
+        throw new Error("This file doesn't look like a valid backup.");
+      }
+
+      // Map old technique IDs to newly-assigned IDs, since IndexedDB
+      // auto-increment IDs may already be taken in this browser.
+      const idMap = {};
+
+      for (const technique of data.techniques) {
+        const oldId = technique.id;
+        const cleanTechnique = { ...technique };
+        delete cleanTechnique.id;
+
+        const newId = await new Promise((resolve, reject) => {
+          const tx = db.transaction("techniques", "readwrite");
+          const store = tx.objectStore("techniques");
+          const req = store.add(cleanTechnique);
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+
+        idMap[oldId] = newId;
+      }
+
+      for (const note of data.notes) {
+        const cleanNote = { ...note };
+        delete cleanNote.id;
+        cleanNote.techniqueId = idMap[note.techniqueId];
+        if (cleanNote.techniqueId === undefined) continue; // orphaned note, skip
+
+        await new Promise((resolve, reject) => {
+          const tx = db.transaction("notes", "readwrite");
+          const store = tx.objectStore("notes");
+          const req = store.add(cleanNote);
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+      }
+
+      messageDiv.style.color = "#8A93A3";
+      messageDiv.textContent = `Import complete: added ${data.techniques.length} programme(s).`;
+      loadTechniqueList();
+    } catch (err) {
+      console.error("Import failed", err);
+      messageDiv.style.color = "#E86C6C";
+      messageDiv.textContent = "Import failed: " + err.message;
+    } finally {
+      event.target.value = "";
+    }
+  };
+  reader.readAsText(file);
+}
+</script>
+
+</body>
+</html>
