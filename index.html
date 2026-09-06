@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jiu Jitsu Techniques</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #181D24;
+    color: #E8EAED;
+    margin: 0;
+    padding: 16px;
+  }
+  h1 { font-size: 20px; margin: 0 0 16px; }
+  .layout {
+    display: flex;
+    gap: 16px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  @media (max-width: 700px) {
+    .layout { flex-direction: column; }
+  }
+  .panel {
+    background: #232A34;
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .list-panel { flex: 0 0 280px; }
+  .detail-panel { flex: 1; min-width: 0; }
+  .add-form input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    border: 1px solid #3A4351;
+    background: #181D24;
+    color: #E8EAED;
+    font-size: 14px;
+  }
+  button {
+    background: #4C8BF5;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  button:hover { background: #3A76D8; }
+  button.secondary {
+    background: #3A4351;
+  }
+  button.secondary:hover { background: #4A5468; }
+  .technique-item {
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 6px;
+    background: #1D232C;
+  }
+  .technique-item:hover { background: #2A3240; }
+  .technique-item.active { background: #4C8BF5; color: white; }
+  .empty-state { color: #8A93A3; font-size: 14px; padding: 20px 0; text-align: center; }
+  .video-wrap {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .video-wrap iframe {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    border: none;
+  }
+  .notes-section h3 { font-size: 15px; margin: 0 0 8px; }
+  textarea {
+    width: 100%;
+    min-height: 60px;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #3A4351;
+    background: #181D24;
+    color: #E8EAED;
+    font-size: 14px;
+    resize: vertical;
+    margin-bottom: 8px;
+  }
+  .note-item {
+    background: #1D232C;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    white-space: pre-wrap;
+  }
+  .note-meta {
+    font-size: 12px;
+    color: #8A93A3;
+    margin-top: 6px;
+  }
+  .timestamp-badge {
+    display: inline-block;
+    background: #4C8BF5;
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .timestamp-badge:hover {
+    background: #3A76D8;
+  }
+  .timestamp-badge:disabled {
+    background: #3A4351;
+    cursor: not-allowed;
+    color: #8A93A3;
+  }
+  .tag-badge {
+    display: inline-block;
+    background: #2A3240;
+    color: #B8C1D1;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin: 2px 4px 2px 0;
+  }
+  .tag-row { margin: 4px 0 12px; }
+  .generate-tags-btn {
+    background: #3A4351;
+    font-size: 12px;
+    padding: 4px 10px;
+  }
+  .generate-tags-btn:hover { background: #4A5468; }
+  .generate-tags-btn:disabled {
+    background: #2A3240;
+    color: #8A93A3;
+    cursor: not-allowed;
+  }
+  .subtopic-block {
+    background: #1D232C;
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 8px;
+  }
+  .subtopic-block input[type="text"] {
+    width: 100%;
+    padding: 6px;
+    margin-bottom: 6px;
+    border-radius: 6px;
+    border: 1px solid #3A4351;
+    background: #181D24;
+    color: #E8EAED;
+    font-size: 13px;
+  }
+  .subtopic-block textarea {
+    min-height: 40px;
+    font-size: 13px;
+  }
+  .lesson-card {
+    background: #232A34;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .lesson-card h2 { margin: 0 0 2px; font-size: 18px; }
+  .lesson-date { font-size: 12px; color: #8A93A3; margin-bottom: 12px; }
+  .lesson-summary-box {
+    background: #1D232C;
+    border-radius: 8px;
+    padding: 14px;
+    margin-top: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+  .related-video-link {
+    display: block;
+    color: #4C8BF5;
+    font-size: 13px;
+    margin: 4px 0;
+  }
+  .delete-link {
+    color: #E86C6C;
+    font-size: 12px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    margin-top: 6px;
+  }
+  .error { color: #E86C6C; font-size: 13px; margin-top: 4px; }
+
+  /* Tabs */
+  .tab-bar {
+    display: flex;
+    gap: 8px;
+    max-width: 1000px;
+    margin: 0 auto 16px;
+  }
+  .tab-button {
+    background: #232A34;
+    color: #8A93A3;
+    border-radius: 8px;
+    padding: 8px 16px;
+  }
+  .tab-button.active {
+    background: #4C8BF5;
+    color: white;
+  }
+  .tab-button:hover:not(.active) {
+    background: #2A3240;
+  }
+
+  /* Drilling plans */
+  .plan-card {
+    background: #232A34;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .plan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .plan-header h2 { margin: 0; font-size: 18px; }
+  .progress-bar-track {
+    background: #1D232C;
+    border-radius: 6px;
+    height: 10px;
+    overflow: hidden;
+    margin: 6px 0 4px;
+  }
+  .progress-bar-fill {
+    background: #4C8BF5;
+    height: 100%;
+    transition: width 0.2s ease;
+  }
+  .progress-label {
+    font-size: 12px;
+    color: #8A93A3;
+  }
+  .section-block {
+    background: #1D232C;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 12px;
+  }
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  .section-header h3 { margin: 0; font-size: 15px; }
+  .checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    font-size: 14px;
+  }
+  .checklist-item.done span.item-label {
+    text-decoration: line-through;
+    color: #8A93A3;
+  }
+  .checklist-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+  .item-label { flex: 1; }
+  .add-item-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .add-item-row select,
+  .add-item-row input[type="text"] {
+    flex: 1;
+    min-width: 140px;
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid #3A4351;
+    background: #181D24;
+    color: #E8EAED;
+    font-size: 13px;
+  }
+  .small-link-btn {
+    background: none;
+    border: none;
+    color: #8A93A3;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 4px 0;
+    text-decoration: underline;
+  }
+</style>
+</head>
+<body>
+
+<h1>Jiu Jitsu Techniques</h1>
+
+<div class="tab-bar">
+  <button id="techniquesTabBtn" class="tab-button active" onclick="switchTab('techniques')">Techniques</button>
+  <button id="drillingTabBtn" class="tab-button" onclick="switchTab('drilling')">Drilling Plans</button>
+  <button id="lessonsTabBtn" class="tab-button" onclick="switchTab('lessons')">Lesson Plans</button>
+</div>
+
+<div class="layout" id="techniquesView">
+  <div class="panel list-panel">
+    <div class="add-form">
+      <input type="text" id="titleInput" placeholder="Techniques (e.g. Collar Choke, Armbar)">
+      <input type="text" id="urlInput" placeholder="YouTube link">
+      <div id="addError" class="error"></div>
+      <button onclick="addTechnique()">Add Technique</button>
+    </div>
+    <hr style="border-color:#3A4351; margin: 16px 0;">
+    <input type="text" id="tagFilterInput" placeholder="Search title or tag..." oninput="loadTechniqueList()" style="width:100%; padding:8px; margin-bottom:8px; border-radius:6px; border:1px solid #3A4351; background:#181D24; color:#E8EAED; font-size:14px;">
+    <div id="techniqueList"></div>
+    <hr style="border-color:#3A4351; margin: 16px 0;">
+    <div class="backup-section">
+      <button class="secondary" onclick="exportData()" style="width:100%; margin-bottom:8px;">Export Backup</button>
+      <button class="secondary" onclick="document.getElementById('importFileInput').click()" style="width:100%;">Import Backup</button>
+      <input type="file" id="importFileInput" accept="application/json" style="display:none;" onchange="importData(event)">
+      <div id="backupMessage" style="font-size:12px; margin-top:8px;"></div>
+    </div>
+    <hr style="border-color:#3A4351; margin: 16px 0;">
+    <div class="settings-section">
+      <label style="font-size:12px; color:#8A93A3; display:block; margin-bottom:4px;">Claude API Key (for auto-tagging)</label>
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-...">
+      <button class="secondary" onclick="saveApiKey()" style="width:100%; margin-top:6px;">Save Key</button>
+      <div id="apiKeyMessage" style="font-size:12px; margin-top:6px; color:#8A93A3;"></div>
+    </div>
+  </div>
+
+  <div class="panel detail-panel" id="detailPanel">
+    <div class="empty-state">Select or add a technique to get started.</div>
+  </div>
+</div>
+
+<div class="drilling-view" id="drillingView" style="display:none; max-width:1000px; margin:0 auto;">
+  <div class="panel" style="margin-bottom:16px;">
+    <div class="add-form">
+      <input type="text" id="planNameInput" placeholder="Drilling plan name (e.g. This Week's Session)">
+      <button onclick="addDrillingPlan()">Add Drilling Plan</button>
+    </div>
+  </div>
+  <div id="drillingPlansList"></div>
+</div>
+
+<div class="lessons-view" id="lessonsView" style="display:none; max-width:1000px; margin:0 auto;">
+  <div class="panel" style="margin-bottom:16px;">
+    <h2 style="margin-top:0;">New Lesson Plan</h2>
+    <input type="text" id="lessonTopicInput" placeholder="Lesson topic (e.g. Collar Chokes from Single Leg X Sweep)">
+    <input type="date" id="lessonDateInput" style="width:100%; padding:8px; margin-bottom:8px; border-radius:6px; border:1px solid #3A4351; background:#181D24; color:#E8EAED; font-size:14px;">
+    <label style="font-size:12px; color:#8A93A3; display:block; margin-bottom:4px;">Main topic notes</label>
+    <textarea id="lessonMainNotesInput" placeholder="What did the main topic cover?"></textarea>
+
+    <div id="lessonSubtopicsBuilder"></div>
+    <button class="secondary" onclick="addSubtopicField()" style="margin-top:8px;">+ Add Option</button>
+
+    <div style="margin-top:16px;">
+      <button onclick="saveLessonPlan()">Save Lesson Plan</button>
+    </div>
+    <div id="lessonSaveMessage" class="error" style="margin-top:8px;"></div>
+  </div>
+
+  <div id="lessonPlansList"></div>
+</div>
+
+<script>
+// ---------- YouTube IFrame API ----------
+let ytPlayer = null;
+let ytApiReady = false;
+
+const ytScriptTag = document.createElement("script");
+ytScriptTag.src = "https://www.youtube.com/iframe_api";
+document.head.appendChild(ytScriptTag);
+
+// Called automatically by the YouTube API once it's loaded
+window.onYouTubeIframeAPIReady = function () {
+  ytApiReady = true;
+};
+
+function formatTime(totalSeconds) {
+  const seconds = Math.floor(totalSeconds % 60);
+  const minutes = Math.floor(totalSeconds / 60);
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
+
+// ---------- API key storage (Claude API, for tag generation) ----------
+const API_KEY_STORAGE_KEY = "claude_api_key";
+
+function saveApiKey() {
+  const input = document.getElementById("apiKeyInput");
+  const messageDiv = document.getElementById("apiKeyMessage");
+  const key = input.value.trim();
+
+  if (!key) {
+    messageDiv.style.color = "#E86C6C";
+    messageDiv.textContent = "Enter a key first.";
+    return;
+  }
+
+  localStorage.setItem(API_KEY_STORAGE_KEY, key);
+  input.value = "";
+  messageDiv.style.color = "#8A93A3";
+  messageDiv.textContent = "Key saved on this device.";
+}
+
+function getApiKey() {
+  return localStorage.getItem(API_KEY_STORAGE_KEY);
+}
+
+// Calls the Claude API directly from the browser to generate tags for a
+// technique title. Returns an array of short lowercase tag strings.
+async function generateTagsForTitle(title) {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    throw new Error("No API key saved. Add one in the sidebar under 'Claude API Key'.");
+  }
+
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true"
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-6",
+      max_tokens: 200,
+      messages: [
+        {
+          role: "user",
+          content: `You are tagging a Brazilian Jiu Jitsu technique for a personal notes app. Given the technique title, return 3-6 short, lowercase tags describing it (e.g. position, submission type, gi/no-gi, body part). Respond ONLY with a JSON array of strings, nothing else, no markdown formatting.
+
+Technique title: "${title}"`
+        }
+      ]
+    })
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`API request failed (${response.status}): ${errorBody.slice(0, 200)}`);
+  }
+
+  const data = await response.json();
+  const textBlock = data.content.find((block) => block.type === "text");
+  if (!textBlock) {
+    throw new Error("No text in API response.");
+  }
+
+  const cleaned = textBlock.text.replace(/```json|```/g, "").trim();
+  const tags = JSON.parse(cleaned);
+
+  if (!Array.isArray(tags)) {
+    throw new Error("API did not return a list of tags.");
+  }
+
+  return tags.map((t) => String(t).toLowerCase().trim()).filter(Boolean);
+}
+
+async function generateTagsForTechnique(techniqueId) {
+  const button = document.getElementById(`generateTagsBtn-${techniqueId}`);
+  const statusDiv = document.getElementById(`tagStatus-${techniqueId}`);
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Generating...";
+  }
+  if (statusDiv) {
+    statusDiv.style.color = "#8A93A3";
+    statusDiv.textContent = "";
+  }
+
+  try {
+    const tx = db.transaction("techniques", "readonly");
+    const store = tx.objectStore("techniques");
+    const technique = await new Promise((resolve, reject) => {
+      const req = store.get(techniqueId);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+
+    const tags = await generateTagsForTitle(technique.title);
+
+    const writeTx = db.transaction("techniques", "readwrite");
+    const writeStore = writeTx.objectStore("techniques");
+    technique.tags = tags;
+    await new Promise((resolve, reject) => {
+      const req = writeStore.put(technique);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
+
+    selectTechnique(techniqueId);
+  } catch (err) {
+    console.error("Tag generation failed", err);
+    if (statusDiv) {
+      statusDiv.style.color = "#E86C6C";
+      statusDiv.textContent = err.message;
+    }
+    if (button) {
+      button.disabled = false;
+      button.textContent = "Generate Tags";
+    }
+  }
+}
+
+// ---------- Tab switching ----------
+function switchTab(tab) {
+  const views = {
+    techniques: document.getElementById("techniquesView"),
+    drilling: document.getElementById("drillingView"),
+    lessons: document.getElementById("lessonsView")
+  };
+  const tabButtons = {
+    techniques: document.getElementById("techniquesTabBtn"),
+    drilling: document.getElementById("drillingTabBtn"),
+    lessons: document.getElementById("lessonsTabBtn")
+  };
+
+  Object.keys(views).forEach((key) => {
+    views[key].style.display = "none";
+    tabButtons[key].classList.remove("active");
+  });
+
+  tabButtons[tab].classList.add("active");
+  views[tab].style.display = tab === "techniques" ? "flex" : "block";
+
+  if (tab === "drilling") {
+    loadDrillingPlans();
+  } else if (tab === "lessons") {
+    if (!document.getElementById("subtopic-0")) {
+      addSubtopicField(); // start every fresh form with one option field
+    }
+    loadLessonPlans();
+  }
+}
+
+// ---------- IndexedDB setup ----------
+let db;
+const DB_NAME = "technique-notes-db";
+const DB_VERSION = 3;
+
+const openRequest = indexedDB.open(DB_NAME, DB_VERSION);
+
+openRequest.onupgradeneeded = (event) => {
+  db = event.target.result;
+  if (!db.objectStoreNames.contains("techniques")) {
+    const store = db.createObjectStore("techniques", { keyPath: "id", autoIncrement: true });
+    store.createIndex("createdAt", "createdAt");
+  }
+  if (!db.objectStoreNames.contains("notes")) {
+    const store = db.createObjectStore("notes", { keyPath: "id", autoIncrement: true });
+    store.createIndex("techniqueId", "techniqueId");
+  }
+  if (!db.objectStoreNames.contains("drillingPlans")) {
+    const store = db.createObjectStore("drillingPlans", { keyPath: "id", autoIncrement: true });
+    store.createIndex("createdAt", "createdAt");
+  }
+  if (!db.objectStoreNames.contains("lessonPlans")) {
+    const store = db.createObjectStore("lessonPlans", { keyPath: "id", autoIncrement: true });
+    store.createIndex("createdAt", "createdAt");
+  }
+};
+
+openRequest.onsuccess = (event) => {
+  db = event.target.result;
+  loadTechniqueList();
+};
+
+openRequest.onerror = (event) => {
+  console.error("Failed to open database", event);
+  document.getElementById("detailPanel").innerHTML =
+    '<div class="error">Could not open local database. Try a different browser or check storage permissions.</div>';
+};
+
+// ---------- Helpers ----------
+function extractYouTubeId(url) {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
+    /(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+    /(?:youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+    /(?:youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/
+  ];
+  for (const p of patterns) {
+    const match = url.match(p);
+    if (match) return match[1];
+  }
+  return null;
+}
+
+let activeTechniqueId = null;
+
+// ---------- Add technique ----------
+function addTechnique() {
+  const titleInput = document.getElementById("titleInput");
+  const urlInput = document.getElementById("urlInput");
+  const errorDiv = document.getElementById("addError");
+  errorDiv.textContent = "";
+
+  const title = titleInput.value.trim();
+  const url = urlInput.value.trim();
+
+  if (!title) {
+    errorDiv.textContent = "Please enter a title.";
+    return;
+  }
+
+  let videoId = null;
+  if (url) {
+    videoId = extractYouTubeId(url);
+    if (!videoId) {
+      errorDiv.textContent = "Couldn't recognize that as a YouTube link. Double check it, or leave it blank.";
+      return;
+    }
+  }
+
+  const technique = {
+    title,
+    url: url || null,
+    videoId: videoId || null,
+    createdAt: Date.now()
+  };
+
+  const tx = db.transaction("techniques", "readwrite");
+  const store = tx.objectStore("techniques");
+  const request = store.add(technique);
+
+  request.onsuccess = () => {
+    titleInput.value = "";
+    urlInput.value = "";
+    loadTechniqueList();
+  };
+
+  request.onerror = () => {
+    errorDiv.textContent = "Something went wrong saving that. Try again.";
+  };
+}
+
+// ---------- List techniques ----------
+function filterByTag(tag) {
+  const filterInput = document.getElementById("tagFilterInput");
+  if (filterInput) {
+    filterInput.value = tag;
+    filterInput.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  loadTechniqueList();
+}
+
+function loadTechniqueList() {
+  const tx = db.transaction("techniques", "readonly");
+  const store = tx.objectStore("techniques");
+  const request = store.getAll();
+
+  request.onsuccess = () => {
+    const allTechniques = request.result.sort((a, b) => b.createdAt - a.createdAt);
+    const listDiv = document.getElementById("techniqueList");
+
+    if (allTechniques.length === 0) {
+      listDiv.innerHTML = '<div class="empty-state">No techniques yet.</div>';
+      return;
+    }
+
+    const filterInput = document.getElementById("tagFilterInput");
+    const filterText = filterInput ? filterInput.value.trim().toLowerCase() : "";
+
+    const techniques = filterText
+      ? allTechniques.filter((t) => {
+          const titleMatch = t.title.toLowerCase().includes(filterText);
+          const tagMatch = Array.isArray(t.tags) &&
+            t.tags.some((tag) => tag.toLowerCase().includes(filterText));
+          return titleMatch || tagMatch;
+        })
+      : allTechniques;
+
+    if (techniques.length === 0) {
+      listDiv.innerHTML = '<div class="empty-state">No techniques match that search.</div>';
+      return;
+    }
+
+    listDiv.innerHTML = "";
+    techniques.forEach((t) => {
+      const item = document.createElement("div");
+      item.className = "technique-item" + (t.id === activeTechniqueId ? " active" : "");
+
+      const tagsPreview = Array.isArray(t.tags) && t.tags.length > 0
+        ? `<div style="font-size:11px; color:#8A93A3; margin-top:2px;">${t.tags.map(escapeHtml).join(", ")}</div>`
+        : "";
+
+      item.innerHTML = `<div>${escapeHtml(t.title)}</div>${tagsPreview}`;
+      item.onclick = () => selectTechnique(t.id);
+      listDiv.appendChild(item);
+    });
+  };
+}
+
+// ---------- Select technique ----------
+function selectTechnique(id) {
+  activeTechniqueId = id;
+  loadTechniqueList();
+
+  const tx = db.transaction("techniques", "readonly");
+  const store = tx.objectStore("techniques");
+  const request = store.get(id);
+
+  request.onsuccess = () => {
+    renderDetail(request.result);
+  };
+}
+
+function renderDetail(technique) {
+  const panel = document.getElementById("detailPanel");
+
+  let videoHtml = "";
+  if (technique.videoId) {
+    videoHtml = `
+      <div class="video-wrap">
+        <div id="ytPlayerContainer" style="position:absolute; top:0; left:0; width:100%; height:100%;"></div>
+      </div>`;
+  } else {
+    videoHtml = `<div class="empty-state">No video linked for this technique.</div>`;
+  }
+
+  const hasTags = Array.isArray(technique.tags) && technique.tags.length > 0;
+  const tagsHtml = hasTags
+    ? technique.tags.map((tag) => `<span class="tag-badge" style="cursor:pointer;" onclick="filterByTag('${escapeHtml(tag).replace(/'/g, "\\'")}')">${escapeHtml(tag)}</span>`).join("")
+    : "";
+
+  panel.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+      <h2 style="margin-top:0;">${escapeHtml(technique.title)}</h2>
+      <button class="secondary" onclick="deleteTechnique(${technique.id})" style="flex-shrink:0; background:#3A2A2A; color:#E86C6C;">Delete Technique</button>
+    </div>
+    <div class="tag-row">
+      ${tagsHtml}
+      <button id="generateTagsBtn-${technique.id}" class="generate-tags-btn" onclick="generateTagsForTechnique(${technique.id})">
+        ${hasTags ? "Regenerate Tags" : "Generate Tags"}
+      </button>
+      <div id="tagStatus-${technique.id}" style="font-size:12px; margin-top:4px;"></div>
+    </div>
+    ${videoHtml}
+    <div class="notes-section">
+      <h3>Notes</h3>
+      <textarea id="noteInput" placeholder="Write a note about this technique..."></textarea>
+      <button id="addNoteBtn" onclick="addNote(${technique.id})">Add Note</button>
+      <div id="notesList" style="margin-top:16px;"></div>
+    </div>
+  `;
+
+  if (technique.videoId) {
+    initPlayer(technique.videoId);
+  }
+
+  loadNotes(technique.id);
+}
+
+// Sets up (or re-creates) the YouTube player for a given video ID.
+// Waits for the API to be ready if it hasn't loaded yet.
+function initPlayer(videoId) {
+  if (!ytApiReady) {
+    // API script hasn't finished loading yet — try again shortly.
+    setTimeout(() => initPlayer(videoId), 200);
+    return;
+  }
+
+  if (ytPlayer && typeof ytPlayer.destroy === "function") {
+    ytPlayer.destroy();
+  }
+
+  ytPlayer = new YT.Player("ytPlayerContainer", {
+    videoId: videoId,
+    playerVars: { rel: 0 },
+    events: {
+      onError: (e) => {
+        console.error("YouTube player error", e);
+      }
+    }
+  });
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ---------- Notes ----------
+function addNote(techniqueId) {
+  const noteInput = document.getElementById("noteInput");
+  const text = noteInput.value.trim();
+  if (!text) return;
+
+  // Capture the video's current playback position, if a player is active
+  // and has actually loaded a video (getCurrentTime exists once ready).
+  let timestampSeconds = null;
+  if (ytPlayer && typeof ytPlayer.getCurrentTime === "function") {
+    try {
+      timestampSeconds = ytPlayer.getCurrentTime();
+    } catch (e) {
+      timestampSeconds = null;
+    }
+  }
+
+  const note = {
+    techniqueId,
+    text,
+    timestampSeconds,
+    createdAt: Date.now()
+  };
+
+  const tx = db.transaction("notes", "readwrite");
+  const store = tx.objectStore("notes");
+  const request = store.add(note);
+
+  request.onsuccess = () => {
+    noteInput.value = "";
+    loadNotes(techniqueId);
+  };
+}
+
+// Jumps the video back to a note's saved timestamp.
+function seekToTimestamp(seconds) {
+  if (ytPlayer && typeof ytPlayer.seekTo === "function") {
+    ytPlayer.seekTo(seconds, true);
+    if (typeof ytPlayer.playVideo === "function") {
+      ytPlayer.playVideo();
+    }
+  }
+}
+
+function loadNotes(techniqueId) {
+  const tx = db.transaction("notes", "readonly");
+  const store = tx.objectStore("notes");
+  const index = store.index("techniqueId");
+  const request = index.getAll(techniqueId);
+
+  request.onsuccess = () => {
+    const notes = request.result.sort((a, b) => b.createdAt - a.createdAt);
+    const notesList = document.getElementById("notesList");
+
+    if (notes.length === 0) {
+      notesList.innerHTML = '<div class="empty-state">No notes yet for this technique.</div>';
+      return;
+    }
+
+    notesList.innerHTML = "";
+    notes.forEach((n) => {
+      const div = document.createElement("div");
+      div.className = "note-item";
+
+      let timestampHtml = "";
+      if (typeof n.timestampSeconds === "number" && !isNaN(n.timestampSeconds)) {
+        timestampHtml = `<button class="timestamp-badge" onclick="seekToTimestamp(${n.timestampSeconds})">${formatTime(n.timestampSeconds)}</button>`;
+      }
+
+      div.innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          ${timestampHtml}
+          <span>${escapeHtml(n.text)}</span>
+        </div>
+        <button class="delete-link" onclick="deleteNote(${n.id}, ${techniqueId})">Delete</button>
+      `;
+      notesList.appendChild(div);
+    });
+  };
+}
+
+function deleteNote(noteId, techniqueId) {
+  const tx = db.transaction("notes", "readwrite");
+  const store = tx.objectStore("notes");
+  const request = store.delete(noteId);
+  request.onsuccess = () => loadNotes(techniqueId);
+}
+
+// ---------- Delete a whole programme (and its notes) ----------
+function deleteTechnique(techniqueId) {
+  const confirmed = confirm(
+    "Delete this technique? This will also delete all notes attached to it. This can't be undone."
+  );
+  if (!confirmed) return;
+
+  // First delete all notes belonging to this technique, then the technique itself.
+  const notesTx = db.transaction("notes", "readwrite");
+  const notesStore = notesTx.objectStore("notes");
+  const notesIndex = notesStore.index("techniqueId");
+  const notesRequest = notesIndex.getAllKeys(techniqueId);
+
+  notesRequest.onsuccess = () => {
+    const noteKeys = notesRequest.result;
+    noteKeys.forEach((key) => notesStore.delete(key));
+
+    notesTx.oncomplete = () => {
+      const techTx = db.transaction("techniques", "readwrite");
+      const techStore = techTx.objectStore("techniques");
+      const deleteRequest = techStore.delete(techniqueId);
+
+      deleteRequest.onsuccess = () => {
+        // Clean up the player if it was showing this technique's video
+        if (ytPlayer && typeof ytPlayer.destroy === "function") {
+          ytPlayer.destroy();
+          ytPlayer = null;
+        }
+
+        activeTechniqueId = null;
+        document.getElementById("detailPanel").innerHTML =
+          '<div class="empty-state">Select or add a technique to get started.</div>';
+        loadTechniqueList();
+      };
+    };
+  };
+}
+
+// ---------- Backup: Export ----------
+function getAllFromStore(storeName) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, "readonly");
+    const store = tx.objectStore(storeName);
+    const request = store.getAll();
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function exportData() {
+  const messageDiv = document.getElementById("backupMessage");
+  try {
+    const techniques = await getAllFromStore("techniques");
+    const notes = await getAllFromStore("notes");
+    const drillingPlans = await getAllFromStore("drillingPlans");
+    const lessonPlans = await getAllFromStore("lessonPlans");
+
+    const backup = {
+      appName: "Jiu Jitsu Techniques",
+      exportedAt: new Date().toISOString(),
+      version: 3,
+      techniques,
+      notes,
+      drillingPlans,
+      lessonPlans
+    };
+
+    const jsonString = JSON.stringify(backup, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const dateStamp = new Date().toISOString().slice(0, 10);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `jiu-jitsu-techniques-backup-${dateStamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    messageDiv.style.color = "#8A93A3";
+    messageDiv.textContent = "Backup downloaded.";
+  } catch (err) {
+    console.error("Export failed", err);
+    messageDiv.style.color = "#E86C6C";
+    messageDiv.textContent = "Export failed. Check the browser console for details.";
+  }
+}
+
+// ---------- Backup: Import ----------
+function importData(event) {
+  const file = event.target.files[0];
+  const messageDiv = document.getElementById("backupMessage");
+  if (!file) return;
+
+  const confirmed = confirm(
+    "Importing will ADD the techniques, notes, and drilling plans from this backup file to your current library. " +
+    "It will not delete anything currently saved. Continue?"
+  );
+  if (!confirmed) {
+    event.target.value = "";
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = async () => {
+    try {
+      const data = JSON.parse(reader.result);
+
+      if (!data.techniques || !data.notes) {
+        throw new Error("This file doesn't look like a valid backup.");
+      }
+
+      // Map old technique IDs to newly-assigned IDs, since IndexedDB
+      // auto-increment IDs may already be taken in this browser.
+      const idMap = {};
+
+      for (const technique of data.techniques) {
+        const oldId = technique.id;
+        const cleanTechnique = { ...technique };
+        delete cleanTechnique.id;
+
+        const newId = await new Promise((resolve, reject) => {
+          const tx = db.transaction("techniques", "readwrite");
+          const store = tx.objectStore("techniques");
+          const req = store.add(cleanTechnique);
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+
+        idMap[oldId] = newId;
+      }
+
+      for (const note of data.notes) {
+        const cleanNote = { ...note };
+        delete cleanNote.id;
+        cleanNote.techniqueId = idMap[note.techniqueId];
+        if (cleanNote.techniqueId === undefined) continue; // orphaned note, skip
+
+        await new Promise((resolve, reject) => {
+          const tx = db.transaction("notes", "readwrite");
+          const store = tx.objectStore("notes");
+          const req = store.add(cleanNote);
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+      }
+
+      // Drilling plans (introduced in backup version 2) — remap any
+      // technique-linked items to the newly-assigned technique IDs.
+      let importedPlanCount = 0;
+      if (Array.isArray(data.drillingPlans)) {
+        for (const plan of data.drillingPlans) {
+          const cleanPlan = { ...plan };
+          delete cleanPlan.id;
+
+          cleanPlan.sections = (cleanPlan.sections || []).map((section) => ({
+            ...section,
+            items: (section.items || [])
+              .map((item) => {
+                if (item.type === "technique") {
+                  const newTechniqueId = idMap[item.techniqueId];
+                  if (newTechniqueId === undefined) return null; // orphaned link, drop it
+                  return { ...item, techniqueId: newTechniqueId };
+                }
+                return item;
+              })
+              .filter((item) => item !== null)
+          }));
+
+          await new Promise((resolve, reject) => {
+            const tx = db.transaction("drillingPlans", "readwrite");
+            const store = tx.objectStore("drillingPlans");
+            const req = store.add(cleanPlan);
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+          });
+          importedPlanCount++;
+        }
+      }
+
+      // Lesson plans (introduced in backup version 3) — remap the loosely
+      // linked "related technique" ids where possible; a miss here just
+      // means the related-videos list looks empty until re-generated.
+      let importedLessonCount = 0;
+      if (Array.isArray(data.lessonPlans)) {
+        for (const lesson of data.lessonPlans) {
+          const cleanLesson = { ...lesson };
+          delete cleanLesson.id;
+
+          if (Array.isArray(cleanLesson.relatedTechniqueIds)) {
+            cleanLesson.relatedTechniqueIds = cleanLesson.relatedTechniqueIds
+              .map((oldId) => idMap[oldId])
+              .filter((id) => id !== undefined);
+          }
+
+          await new Promise((resolve, reject) => {
+            const tx = db.transaction("lessonPlans", "readwrite");
+            const store = tx.objectStore("lessonPlans");
+            const req = store.add(cleanLesson);
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+          });
+          importedLessonCount++;
+        }
+      }
+
+      messageDiv.style.color = "#8A93A3";
+      messageDiv.textContent = `Import complete: added ${data.techniques.length} technique(s), ${importedPlanCount} drilling plan(s), and ${importedLessonCount} lesson plan(s).`;
+      loadTechniqueList();
+    } catch (err) {
+      console.error("Import failed", err);
+      messageDiv.style.color = "#E86C6C";
+      messageDiv.textContent = "Import failed: " + err.message;
+    } finally {
+      event.target.value = "";
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ---------- Drilling Plans ----------
+// Data shape for a drillingPlans record:
+// {
+//   id, name, createdAt,
+//   sections: [
+//     {
+//       id: "sec-1699999999999",  (locally generated string id, unique within the plan)
+//       name: "Warm-up",
+//       items: [
+//         { id: "item-...", type: "technique", techniqueId: 3, done: false },
+//         { id: "item-...", type: "freeform", text: "5 min shadow drilling", done: false }
+//       ]
+//     }
+//   ]
+// }
+
+function makeLocalId(prefix) {
+  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+}
+
+function addDrillingPlan() {
+  const input = document.getElementById("planNameInput");
+  const name = input.value.trim();
+  if (!name) return;
+
+  const plan = {
+    name,
+    sections: [],
+    createdAt: Date.now()
+  };
+
+  const tx = db.transaction("drillingPlans", "readwrite");
+  const store = tx.objectStore("drillingPlans");
+  const request = store.add(plan);
+
+  request.onsuccess = () => {
+    input.value = "";
+    loadDrillingPlans();
+  };
+}
+
+function getDrillingPlan(planId) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction("drillingPlans", "readonly");
+    const store = tx.objectStore("drillingPlans");
+    const request = store.get(planId);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+function saveDrillingPlan(plan) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction("drillingPlans", "readwrite");
+    const store = tx.objectStore("drillingPlans");
+    const request = store.put(plan);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+}
+
+function deleteDrillingPlan(planId) {
+  const confirmed = confirm("Delete this drilling plan? This can't be undone.");
+  if (!confirmed) return;
+
+  const tx = db.transaction("drillingPlans", "readwrite");
+  const store = tx.objectStore("drillingPlans");
+  const request = store.delete(planId);
+  request.onsuccess = () => loadDrillingPlans();
+}
+
+async function loadDrillingPlans() {
+  const [plans, techniques] = await Promise.all([
+    getAllFromStore("drillingPlans"),
+    getAllFromStore("techniques")
+  ]);
+
+  const container = document.getElementById("drillingPlansList");
+
+  if (plans.length === 0) {
+    container.innerHTML = '<div class="empty-state">No drilling plans yet. Add one above.</div>';
+    return;
+  }
+
+  const techniqueMap = {};
+  techniques.forEach((t) => { techniqueMap[t.id] = t; });
+
+  const sortedPlans = plans.sort((a, b) => b.createdAt - a.createdAt);
+  container.innerHTML = sortedPlans.map((plan) => renderPlanCard(plan, techniques, techniqueMap)).join("");
+}
+
+function calculateProgress(items) {
+  if (!items || items.length === 0) return 0;
+  const doneCount = items.filter((i) => i.done).length;
+  return Math.round((doneCount / items.length) * 100);
+}
+
+function renderPlanCard(plan, techniques, techniqueMap) {
+  const allItems = plan.sections.flatMap((s) => s.items);
+  const overallProgress = calculateProgress(allItems);
+
+  const sectionsHtml = plan.sections.map((section) => {
+    const sectionProgress = calculateProgress(section.items);
+
+    const itemsHtml = section.items.map((item) => {
+      const label = item.type === "technique"
+        ? (techniqueMap[item.techniqueId] ? escapeHtml(techniqueMap[item.techniqueId].title) : "(deleted technique)")
+        : escapeHtml(item.text);
+
+      return `
+        <div class="checklist-item ${item.done ? "done" : ""}">
+          <input type="checkbox" ${item.done ? "checked" : ""}
+            onchange="toggleItemDone(${plan.id}, '${section.id}', '${item.id}')">
+          <span class="item-label">${label}</span>
+          <button class="delete-link" onclick="deleteItem(${plan.id}, '${section.id}', '${item.id}')">Delete</button>
+        </div>`;
+    }).join("");
+
+    const techniqueOptions = techniques.map((t) =>
+      `<option value="${t.id}">${escapeHtml(t.title)}</option>`
+    ).join("");
+
+    return `
+      <div class="section-block">
+        <div class="section-header">
+          <h3>${escapeHtml(section.name)}</h3>
+          <button class="delete-link" onclick="deleteSection(${plan.id}, '${section.id}')">Delete Section</button>
+        </div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" style="width:${sectionProgress}%;"></div>
+        </div>
+        <div class="progress-label">${sectionProgress}% complete</div>
+        ${itemsHtml}
+        <div class="add-item-row">
+          <select id="techSelect-${plan.id}-${section.id}">
+            <option value="">Pick a saved technique...</option>
+            ${techniqueOptions}
+          </select>
+          <button class="secondary" onclick="addTechniqueItem(${plan.id}, '${section.id}')">Add</button>
+        </div>
+        <div class="add-item-row">
+          <input type="text" id="freeformInput-${plan.id}-${section.id}" placeholder="Or type a custom item...">
+          <button class="secondary" onclick="addFreeformItem(${plan.id}, '${section.id}')">Add</button>
+        </div>
+      </div>`;
+  }).join("");
+
+  return `
+    <div class="plan-card">
+      <div class="plan-header">
+        <h2>${escapeHtml(plan.name)}</h2>
+        <button class="delete-link" onclick="deleteDrillingPlan(${plan.id})">Delete Plan</button>
+      </div>
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" style="width:${overallProgress}%;"></div>
+      </div>
+      <div class="progress-label">${overallProgress}% complete overall</div>
+      ${sectionsHtml}
+      <div class="add-item-row" style="margin-top:16px;">
+        <input type="text" id="sectionInput-${plan.id}" placeholder="New section name (e.g. Warm-up)">
+        <button class="secondary" onclick="addSection(${plan.id})">Add Section</button>
+      </div>
+    </div>`;
+}
+
+async function addSection(planId) {
+  const input = document.getElementById(`sectionInput-${planId}`);
+  const name = input.value.trim();
+  if (!name) return;
+
+  const plan = await getDrillingPlan(planId);
+  plan.sections.push({ id: makeLocalId("sec"), name, items: [] });
+  await saveDrillingPlan(plan);
+  loadDrillingPlans();
+}
+
+async function deleteSection(planId, sectionId) {
+  const confirmed = confirm("Delete this section and all its items?");
+  if (!confirmed) return;
+
+  const plan = await getDrillingPlan(planId);
+  plan.sections = plan.sections.filter((s) => s.id !== sectionId);
+  await saveDrillingPlan(plan);
+  loadDrillingPlans();
+}
+
+async function addTechniqueItem(planId, sectionId) {
+  const select = document.getElementById(`techSelect-${planId}-${sectionId}`);
+  const techniqueId = parseInt(select.value, 10);
+  if (!techniqueId) return;
+
+  const plan = await getDrillingPlan(planId);
+  const section = plan.sections.find((s) => s.id === sectionId);
+  section.items.push({ id: makeLocalId("item"), type: "technique", techniqueId, done: false });
+  await saveDrillingPlan(plan);
+  loadDrillingPlans();
+}
+
+async function addFreeformItem(planId, sectionId) {
+  const input = document.getElementById(`freeformInput-${planId}-${sectionId}`);
+  const text = input.value.trim();
+  if (!text) return;
+
+  const plan = await getDrillingPlan(planId);
+  const section = plan.sections.find((s) => s.id === sectionId);
+  section.items.push({ id: makeLocalId("item"), type: "freeform", text, done: false });
+  await saveDrillingPlan(plan);
+  loadDrillingPlans();
+}
+
+async function toggleItemDone(planId, sectionId, itemId) {
+  const plan = await getDrillingPlan(planId);
+  const section = plan.sections.find((s) => s.id === sectionId);
+  const item = section.items.find((i) => i.id === itemId);
+  item.done = !item.done;
+  await saveDrillingPlan(plan);
+  loadDrillingPlans();
+}
+
+async function deleteItem(planId, sectionId, itemId) {
+  const plan = await getDrillingPlan(planId);
+  const section = plan.sections.find((s) => s.id === sectionId);
+  section.items = section.items.filter((i) => i.id !== itemId);
+  await saveDrillingPlan(plan);
+  loadDrillingPlans();
+}
+
+// ---------- Lesson Plans ----------
+// Data shape for a lessonPlans record:
+// {
+//   id, topic, date, mainTopicNotes, createdAt,
+//   subtopics: [ { title, notes }, ... ],
+//   summary: "..."   (added once generated)
+// }
+
+let subtopicFieldCount = 0;
+
+function addSubtopicField() {
+  const builder = document.getElementById("lessonSubtopicsBuilder");
+  const index = subtopicFieldCount++;
+
+  const block = document.createElement("div");
+  block.className = "subtopic-block";
+  block.id = `subtopic-${index}`;
+  block.innerHTML = `
+    <input type="text" id="subtopicTitle-${index}" placeholder="Option ${index + 1} topic (e.g. Entry from failed sweep)">
+    <textarea id="subtopicNotes-${index}" placeholder="Notes for this option..."></textarea>
+    <button class="small-link-btn" onclick="document.getElementById('subtopic-${index}').remove()">Remove this option</button>
+  `;
+  builder.appendChild(block);
+}
+
+function collectSubtopicFields() {
+  const builder = document.getElementById("lessonSubtopicsBuilder");
+  const blocks = builder.querySelectorAll(".subtopic-block");
+  const subtopics = [];
+
+  blocks.forEach((block) => {
+    const titleInput = block.querySelector('input[type="text"]');
+    const notesInput = block.querySelector("textarea");
+    const title = titleInput.value.trim();
+    const notes = notesInput.value.trim();
+    if (title || notes) {
+      subtopics.push({ title: title || "(untitled option)", notes });
+    }
+  });
+
+  return subtopics;
+}
+
+function resetLessonForm() {
+  document.getElementById("lessonTopicInput").value = "";
+  document.getElementById("lessonDateInput").value = "";
+  document.getElementById("lessonMainNotesInput").value = "";
+  document.getElementById("lessonSubtopicsBuilder").innerHTML = "";
+  subtopicFieldCount = 0;
+  addSubtopicField();
+}
+
+function saveLessonPlan() {
+  const messageDiv = document.getElementById("lessonSaveMessage");
+  messageDiv.textContent = "";
+
+  const topic = document.getElementById("lessonTopicInput").value.trim();
+  const date = document.getElementById("lessonDateInput").value;
+  const mainTopicNotes = document.getElementById("lessonMainNotesInput").value.trim();
+  const subtopics = collectSubtopicFields();
+
+  if (!topic) {
+    messageDiv.textContent = "Please enter a lesson topic.";
+    return;
+  }
+
+  const lesson = {
+    topic,
+    date: date || null,
+    mainTopicNotes,
+    subtopics,
+    createdAt: Date.now()
+  };
+
+  const tx = db.transaction("lessonPlans", "readwrite");
+  const store = tx.objectStore("lessonPlans");
+  const request = store.add(lesson);
+
+  request.onsuccess = () => {
+    resetLessonForm();
+    loadLessonPlans();
+  };
+
+  request.onerror = () => {
+    messageDiv.textContent = "Something went wrong saving that lesson. Try again.";
+  };
+}
+
+function getLessonPlan(lessonId) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction("lessonPlans", "readonly");
+    const store = tx.objectStore("lessonPlans");
+    const request = store.get(lessonId);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+function saveLessonRecord(lesson) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction("lessonPlans", "readwrite");
+    const store = tx.objectStore("lessonPlans");
+    const request = store.put(lesson);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+}
+
+function deleteLessonPlan(lessonId) {
+  const confirmed = confirm("Delete this lesson plan? This can't be undone.");
+  if (!confirmed) return;
+
+  const tx = db.transaction("lessonPlans", "readwrite");
+  const store = tx.objectStore("lessonPlans");
+  const request = store.delete(lessonId);
+  request.onsuccess = () => loadLessonPlans();
+}
+
+async function loadLessonPlans() {
+  const lessons = await getAllFromStore("lessonPlans");
+  const container = document.getElementById("lessonPlansList");
+
+  if (lessons.length === 0) {
+    container.innerHTML = '<div class="empty-state">No lesson plans yet. Add one above.</div>';
+    return;
+  }
+
+  const sorted = lessons.sort((a, b) => b.createdAt - a.createdAt);
+  container.innerHTML = sorted.map(renderLessonCard).join("");
+}
+
+function renderLessonCard(lesson) {
+  const dateDisplay = lesson.date
+    ? new Date(lesson.date + "T00:00:00").toLocaleDateString()
+    : "No date set";
+
+  const subtopicsHtml = lesson.subtopics.map((s, i) => `
+    <div style="margin-top:8px;">
+      <strong style="font-size:13px;">Option ${i + 1}: ${escapeHtml(s.title)}</strong>
+      <div style="font-size:13px; color:#B8C1D1; white-space:pre-wrap;">${escapeHtml(s.notes)}</div>
+    </div>
+  `).join("");
+
+  let summaryHtml = "";
+  if (lesson.summary) {
+    summaryHtml = `<div class="lesson-summary-box">${escapeHtml(lesson.summary)}</div>`;
+  }
+
+  return `
+    <div class="lesson-card">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+        <div>
+          <h2>${escapeHtml(lesson.topic)}</h2>
+          <div class="lesson-date">${dateDisplay}</div>
+        </div>
+        <button class="delete-link" onclick="deleteLessonPlan(${lesson.id})">Delete</button>
+      </div>
+      ${lesson.mainTopicNotes ? `<div style="font-size:14px; white-space:pre-wrap; margin-bottom:8px;">${escapeHtml(lesson.mainTopicNotes)}</div>` : ""}
+      ${subtopicsHtml}
+      <button id="generateSummaryBtn-${lesson.id}" class="generate-tags-btn" style="margin-top:12px;" onclick="generateLessonSummary(${lesson.id})">
+        ${lesson.summary ? "Regenerate Summary" : "Generate Lesson Summary"}
+      </button>
+      <div id="summaryStatus-${lesson.id}" style="font-size:12px; margin-top:6px;"></div>
+      ${summaryHtml}
+    </div>`;
+}
+
+// Step 1 of summary generation: ask Claude which of the user's saved
+// techniques (by title + tags) are relevant to this lesson's topic/subtopics.
+// This is a small "retrieval" pass before the main summary generation call.
+async function findRelatedTechniques(lesson, techniques) {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    throw new Error("No API key saved. Add one in the Techniques tab sidebar.");
+  }
+
+  if (techniques.length === 0) {
+    return [];
+  }
+
+  const techniqueDirectory = techniques.map((t) => ({
+    id: t.id,
+    title: t.title,
+    tags: Array.isArray(t.tags) ? t.tags : []
+  }));
+
+  const subtopicTitles = lesson.subtopics.map((s) => s.title).join(", ");
+
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true"
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-6",
+      max_tokens: 300,
+      messages: [
+        {
+          role: "user",
+          content: `A Brazilian Jiu Jitsu lesson covers this topic: "${lesson.topic}". Its specific options/sections are: ${subtopicTitles || "none listed"}.
+
+Here is a directory of saved techniques (with id, title, and tags) from the user's library:
+${JSON.stringify(techniqueDirectory)}
+
+Return ONLY a JSON array of the "id" values from the directory that are genuinely relevant to this lesson's topic or its options (matching by subject matter, not just loose keyword overlap). If none are relevant, return an empty array. No explanation, no markdown, just the JSON array of ids.`
+        }
+      ]
+    })
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`Related-video lookup failed (${response.status}): ${errorBody.slice(0, 200)}`);
+  }
+
+  const data = await response.json();
+  const textBlock = data.content.find((block) => block.type === "text");
+  const cleaned = textBlock.text.replace(/```json|```/g, "").trim();
+  const ids = JSON.parse(cleaned);
+
+  if (!Array.isArray(ids)) return [];
+  return techniques.filter((t) => ids.includes(t.id));
+}
+
+// Step 2: generate the actual structured lesson summary, using the lesson's
+// own notes plus the related techniques found in step 1 as extra context.
+async function generateLessonSummaryText(lesson, relatedTechniques) {
+  const apiKey = getApiKey();
+
+  const relatedList = relatedTechniques.length > 0
+    ? relatedTechniques.map((t) => `- ${t.title}${t.url ? ` (${t.url})` : ""}`).join("\n")
+    : "(none found in the user's saved library)";
+
+  const subtopicsText = lesson.subtopics.map((s, i) =>
+    `Option ${i + 1} - ${s.title}:\n${s.notes || "(no notes)"}`
+  ).join("\n\n");
+
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true"
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-6",
+      max_tokens: 800,
+      messages: [
+        {
+          role: "user",
+          content: `Write a structured coaching summary for this Brazilian Jiu Jitsu lesson, using only the information given below. Do not invent details that aren't present in the notes.
+
+Lesson topic: ${lesson.topic}
+Date: ${lesson.date || "not specified"}
+
+Main topic notes:
+${lesson.mainTopicNotes || "(no notes)"}
+
+${subtopicsText || "(no options recorded)"}
+
+Related videos already saved in the user's library (matched by topic):
+${relatedList}
+
+Format your response with these exact section headers, plain text, no markdown symbols:
+LESSON OVERVIEW
+KEY POINTS
+RELATED VIDEOS IN YOUR LIBRARY
+SUGGESTED FOLLOW-UP DRILLING
+
+Keep it concise and practical, written for the practitioner's own future reference.`
+        }
+      ]
+    })
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`Summary generation failed (${response.status}): ${errorBody.slice(0, 200)}`);
+  }
+
+  const data = await response.json();
+  const textBlock = data.content.find((block) => block.type === "text");
+  if (!textBlock) {
+    throw new Error("No text in API response.");
+  }
+  return textBlock.text.trim();
+}
+
+async function generateLessonSummary(lessonId) {
+  const button = document.getElementById(`generateSummaryBtn-${lessonId}`);
+  const statusDiv = document.getElementById(`summaryStatus-${lessonId}`);
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Generating...";
+  }
+  if (statusDiv) {
+    statusDiv.style.color = "#8A93A3";
+    statusDiv.textContent = "Finding related videos in your library...";
+  }
+
+  try {
+    const lesson = await getLessonPlan(lessonId);
+    const techniques = await getAllFromStore("techniques");
+
+    const relatedTechniques = await findRelatedTechniques(lesson, techniques);
+
+    if (statusDiv) {
+      statusDiv.textContent = "Writing summary...";
+    }
+
+    const summary = await generateLessonSummaryText(lesson, relatedTechniques);
+
+    lesson.summary = summary;
+    lesson.relatedTechniqueIds = relatedTechniques.map((t) => t.id);
+    await saveLessonRecord(lesson);
+
+    loadLessonPlans();
+  } catch (err) {
+    console.error("Lesson summary generation failed", err);
+    if (statusDiv) {
+      statusDiv.style.color = "#E86C6C";
+      statusDiv.textContent = err.message;
+    }
+    if (button) {
+      button.disabled = false;
+      button.textContent = "Generate Lesson Summary";
+    }
+  }
+}
+</script>
+
+</body>
+</html>
